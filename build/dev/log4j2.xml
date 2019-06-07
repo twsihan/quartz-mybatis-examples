@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- status=debug 可以查看log4j的装配过程 off 关闭 -->
+<!--<configuration status="debug" packages="org.apache.logging.log4j.core.config.plugins">-->
+<configuration status="warn">
+    <properties>
+        <property name="consolePattern">%clr{%d{yyyy-MM-dd HH:mm:ss.SSS}}{faint} %clr{%-5p} %clr{${sys:PID}}{magenta} %clr{---}{faint} %clr{[%15.15t]}{faint} %clr{%-40.40logger{39}}{cyan} %clr{:}{faint} %m%n</property>
+        <property name="filePattern">%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p ${sys:PID} --- [%15.15t] %-40.40logger{39} : %m%n</property>
+        <property name="logPath">logs/</property>
+        <property name="appLog">${logPath}/app.log</property>
+        <property name="appPatternLog">${logPath}/app_$${date:yyyy-MM}-%i.log.gz</property>
+    </properties>
+    <!-- 定义所有的appender -->
+    <appenders>
+        <!-- 这个输出控制台的配置 -->
+        <console name="stdout" target="SYSTEM_OUT" follow="true">
+            <patternLayout pattern="${consolePattern}" />
+            <!-- 控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch） -->
+            <thresholdFilter level="trace" onMatch="ACCEPT" onMismatch="DENY" />
+        </console>
+        <!-- 这个会打印出所有的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档 -->
+        <rollingFile name="appLog" fileName="${appLog}" filePattern="${appPatternLog}">
+            <patternLayout pattern="${filePattern}" />
+            <policies>
+                <sizeBasedTriggeringPolicy size="250MB" />
+            </policies>
+            <defaultRolloverStrategy max="20" />
+        </rollingFile>
+    </appenders>
+    <!-- 定义logger，只有定义了 logger 并引入的 appender，appender 才会生效 -->
+    <loggers>
+        <logger name="com.twsihan.examples" level="info"><!--  additivity="false" -->
+            <appenderRef ref="appLog" />
+        </logger>
+        <!-- 根 logger 的设置 ALL(TRACE) > DEBUG > INFO > WARN > ERROR > FATAL > OFF -->
+        <root level="error">
+            <appenderRef ref="stdout" />
+        </root>
+    </loggers>
+</configuration>
